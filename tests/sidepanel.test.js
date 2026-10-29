@@ -92,3 +92,9 @@ test('an entry can be left out before adding', async () => {
   panel.$('#add').click();
   assert.equal(panel.$('#blocks').children.length, 4);
 });
+
+test('there is no API key field', async () => {
+  const state = {};
+  const panel = await openPage('sidepanel.html', fakeChrome(state), state);
+  assert.equal(panel.$('#anki-key'), null);
+});

@@ -27,7 +27,7 @@ function showDecks(decks) {
 }
 
 async function anki(action, params) {
-  const response = await chrome.runtime.sendMessage({ type: 'anki', action, params, key: settings.key || undefined });
+  const response = await chrome.runtime.sendMessage({ type: 'anki', action, params });
   if (!response || !response.ok) throw new Error((response && response.error) || 'Anki did not answer.');
   return response.result;
 }
@@ -35,7 +35,7 @@ async function anki(action, params) {
 // Fills the dropdown with the decks in Anki. Without Anki it keeps showing the current deck.
 async function loadDecks() {
   try {
-    await DCC.ankiAllow(anki, settings.key);
+    await DCC.ankiAllow(anki);
     showDecks(await anki('deckNames'));
     deckError = '';
   } catch (err) {

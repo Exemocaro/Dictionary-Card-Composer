@@ -10,7 +10,7 @@ Dictionary Card Composer doesn't collect, sell or share personal data. It has no
 
 ## What it stores
 
-- **Your card draft** (Front, the entries you added and your choices) and **Send to Anki settings** (deck, note type, field names and, if you enter one, your AnkiConnect API key). These are kept in Chrome's local extension storage on your device, so the draft survives a restart. Click "New card" to clear the draft. Uninstalling the extension removes everything.
+- **Your card draft** (Front, the entries you added and your choices) and **Send to Anki settings** (deck, note type and field names). These are kept in Chrome's local extension storage on your device, so the draft survives a restart. Click "New card" to clear the draft. Uninstalling the extension removes everything.
 - The entry's pictures (up to 1 MB each) are kept with the draft so they can be saved to Anki. If they don't fit in the extension's storage, only their web addresses are kept.
 
 ## Network requests

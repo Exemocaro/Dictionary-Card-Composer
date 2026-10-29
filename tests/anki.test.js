@@ -9,9 +9,9 @@ test('invoke sends a version 6 request to the loopback address', async () => {
     sent = { url, body: JSON.parse(init.body) };
     return { ok: true, json: async () => ({ result: ['Default'], error: null }) };
   };
-  assert.deepEqual(await DCC.ankiInvoke('deckNames', {}, 'secret'), ['Default']);
+  assert.deepEqual(await DCC.ankiInvoke('deckNames', {}), ['Default']);
   assert.equal(sent.url, 'http://127.0.0.1:8765');
-  assert.deepEqual(sent.body, { action: 'deckNames', version: 6, params: {}, key: 'secret' });
+  assert.deepEqual(sent.body, { action: 'deckNames', version: 6, params: {} }, 'no API key is sent');
 });
 
 test('invoke reports AnkiConnect errors and connection failures', async () => {
@@ -111,8 +111,9 @@ test('resolveAnkiSettings explains a note type with too few fields', async () =>
 
 test('resolveAnkiSettings keeps the chosen deck and fields until they are changed', async () => {
   const anki = fakeAnki();
-  const saved = { deck: 'Inglês', model: 'Basic', frontField: 'Back', backField: 'Front', key: 'k' };
-  assert.deepEqual(await DCC.resolveAnkiSettings(anki.invoke, saved), saved);
+  const saved = { deck: 'Inglês', model: 'Basic', frontField: 'Back', backField: 'Front' };
+  assert.deepEqual(await DCC.resolveAnkiSettings(anki.invoke, { ...saved, key: 'from an older version' }), saved,
+    'an API key saved by an older version is dropped');
 });
 
 function draftWith(images = false) {
@@ -195,4 +196,11 @@ test('an image address with a broken %-escape is reported, not fatal', async () 
   const invoke = async () => { throw new Error('download failed'); };
   const { failures } = await DCC.storeImages(invoke, [{ url: 'https://x.example/bad%E0%A4%A.png' }], 'word');
   assert.deepEqual(failures, ['bad%E0%A4%A.png: download failed']);
+});
+
+test('an AnkiConnect set to require an API key gets a clear explanation', async () => {
+  const invoke = async () => ({ permission: 'granted', requireApikey: true, version: 6 });
+  await assert.rejects(DCC.ankiAllow(invoke), err =>
+    /AnkiConnect → Config/.test(err.message) && /"apiKey" back to null/.test(err.message));
+  await DCC.ankiAllow(async () => ({ permission: 'granted', requireApikey: false }));
 });

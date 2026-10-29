@@ -96,7 +96,7 @@ http://127.0.0.1:8765/* is the AnkiConnect add-on running inside desktop Anki on
 
 **Are you using remote code?** No, I am not using remote code. All code is in the package.
 
-**What user data do you plan to collect?** Tick **Website content** only. The extension reads the text and pictures of the dictionary page you click on, keeps them in the draft on your device and sends them to your own Anki. The store's FAQ says data handled only on the user's device must still be declared. Nothing else applies: there are no accounts, no tracking of pages or clicks, and no data leaves the computer. One edge case: if a user sets an AnkiConnect API key in "Anki settings", it is stored on their device; to declare that literally, also tick **Authentication information**.
+**What user data do you plan to collect?** Tick **Website content** only. The extension reads the text and pictures of the dictionary page you click on, keeps them in the draft on your device and sends them to your own Anki. The store's FAQ says data handled only on the user's device must still be declared. Nothing else applies: there are no accounts, no tracking of pages or clicks, and no data leaves the computer.
 
 **Certify all three disclosures:** yes, all three are true.
 

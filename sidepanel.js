@@ -1,7 +1,7 @@
 const $ = selector => document.querySelector(selector);
 
 let draft = DCC.newDraft();
-let settings = { deck: '', model: '', frontField: '', backField: '', key: '' };
+let settings = { deck: '', model: '', frontField: '', backField: '' };
 let pending = null; // { blocks } read from the current page, not yet on the card
 const expanded = new Set(); // ids of blocks whose details are open
 
@@ -288,7 +288,7 @@ function newCard() {
 // ---------- Anki ----------
 
 async function anki(action, params) {
-  const response = await chrome.runtime.sendMessage({ type: 'anki', action, params, key: settings.key || undefined });
+  const response = await chrome.runtime.sendMessage({ type: 'anki', action, params });
   if (!response) throw new Error('The extension background did not answer. Try again.');
   if (!response.ok) throw new Error(response.error);
   return response.result;
@@ -318,7 +318,7 @@ async function connectAnki() {
   const status = $('#anki-status');
   try {
     setStatus(status, 'Connecting… If Anki asks whether to allow this extension, choose Yes.');
-    await DCC.ankiAllow(anki, settings.key);
+    await DCC.ankiAllow(anki);
     const [decks, models] = await Promise.all([anki('deckNames'), anki('modelNames')]);
     const deck = settings.deck || DCC.DEFAULT_DECK;
     fillSelect($('#anki-deck'), [...new Set([DCC.DEFAULT_DECK, deck, ...decks])], deck);
@@ -379,10 +379,6 @@ $('#discard-edits').addEventListener('click', () => {
 $('#copy-front').addEventListener('click', copyFront);
 $('#copy-back').addEventListener('click', copyBack);
 $('#new-card').addEventListener('click', newCard);
-$('#anki-key').addEventListener('change', event => {
-  settings.key = event.target.value;
-  saveSettings();
-});
 $('#anki-connect').addEventListener('click', connectAnki);
 $('#anki-model').addEventListener('change', () => {
   settings.frontField = settings.backField = '';
@@ -411,7 +407,6 @@ chrome.storage.onChanged.addListener((changes, area) => {
   const stored = await chrome.storage.local.get(['draft', 'ankiSettings']);
   draft = DCC.loadDraft(stored.draft);
   settings = Object.assign(settings, stored.ankiSettings);
-  $('#anki-key').value = settings.key;
   $('#allow-sites').hidden = await chrome.permissions.contains({ origins: DCC.sites.map(s => s.origin) });
   refresh();
 })();
