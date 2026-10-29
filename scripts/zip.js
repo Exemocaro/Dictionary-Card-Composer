@@ -5,7 +5,8 @@ const path = require('path');
 const zlib = require('zlib');
 
 const root = path.join(__dirname, '..');
-const INCLUDE = ['manifest.json', 'background.js', 'extract-page.js', 'sidepanel.html', 'sidepanel.js', 'sidepanel.css', 'popup.html', 'popup.js', 'popup.css', 'lib', 'parsers', 'icons'];
+const INCLUDE = ['manifest.json', 'background.js', 'extract-page.js', 'sidepanel.html', 'sidepanel.js', 'sidepanel.css', 'popup.html', 'popup.js', 'popup.css', 'lib', 'parsers',
+  'icons/icon16.png', 'icons/icon32.png', 'icons/icon48.png', 'icons/icon128.png']; // not the large source icon.png
 const DOS_DATE_1980_01_01 = 0x21;
 
 function listFiles(rel) {
