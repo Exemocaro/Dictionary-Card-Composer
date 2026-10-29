@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Dictionary Card Composer</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <section>
+    <h2>Dictionary page</h2>
+    <div class="row">
+      <button id="read">Read this page</button>
+      <button id="allow-sites" class="secondary" hidden>Allow on supported dictionaries</button>
+    </div>
+    <p id="read-status" class="status" role="status"></p>
+    <div id="pending" hidden>
+      <select id="entry-picker" hidden></select>
+      <div id="pending-editor"></div>
+      <div class="row">
+        <button id="add">Add to card</button>
+        <button id="add-all" class="secondary" hidden>Add all</button>
+        <button id="copy-entry" class="secondary">Copy this entry</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Card</h2>
+    <label class="field">Front <input id="front" autocomplete="off"></label>
+    <div id="blocks"></div>
+    <h3>Back</h3>
+    <p id="override-note" class="hint" hidden>
+      Edited by hand, so block changes no longer show here.
+      <button id="discard-edits" class="link">Discard my edits</button>
+    </p>
+    <div id="preview" class="preview" contenteditable="true" data-placeholder="Read a dictionary page and add an entry. You can also type here."></div>
+    <p id="image-note" class="hint" hidden>
+      Copied images are only web links, which Anki may not keep. Use Send to Anki for real image files,
+      or save the image and attach it in Anki yourself.
+    </p>
+    <div class="row">
+      <button id="anki-send">Send to Anki</button>
+      <button id="copy-front" class="secondary">Copy Front</button>
+      <button id="copy-back" class="secondary">Copy Back</button>
+      <button id="new-card" class="secondary">New card</button>
+    </div>
+    <p id="card-status" class="status" role="status"></p>
+  </section>
+
+  <details id="anki">
+    <summary>Anki settings</summary>
+    <p class="hint">
+      Send to Anki needs desktop Anki running with the AnkiConnect add-on. Until you choose here, cards go to the
+      "Dictionary Cards" deck (created for you) with the Basic note type (first field = Front, second = Back).
+    </p>
+    <label class="field">API key, only if you set one in AnkiConnect <input id="anki-key" type="password" autocomplete="off"></label>
+    <button id="anki-connect" class="secondary">Choose deck and note type</button>
+    <div id="anki-fields" hidden>
+      <label class="field">Deck <select id="anki-deck"></select></label>
+      <label class="field">Note type <select id="anki-model"></select></label>
+      <label class="field">Front field <select id="anki-front"></select></label>
+      <label class="field">Back field <select id="anki-back"></select></label>
+    </div>
+    <p id="anki-status" class="status" role="status"></p>
+  </details>
+
+  <script src="lib/sites.js"></script>
+  <script src="lib/model.js"></script>
+  <script src="lib/render.js"></script>
+  <script src="lib/sanitize.js"></script>
+  <script src="lib/clipboard.js"></script>
+  <script src="lib/read-tab.js"></script>
+  <script src="lib/ankiconnect.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

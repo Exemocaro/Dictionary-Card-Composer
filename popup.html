@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Dictionary Card Composer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <select id="deck" class="secondary" title="Anki deck for new cards" aria-label="Anki deck for new cards"></select>
+  <button id="create">Create &amp; upload card</button>
+  <button id="open-panel" class="secondary">Open detailed panel</button>
+  <p id="status" class="status" role="status"></p>
+
+  <script src="lib/sites.js"></script>
+  <script src="lib/model.js"></script>
+  <script src="lib/read-tab.js"></script>
+  <script src="lib/ankiconnect.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

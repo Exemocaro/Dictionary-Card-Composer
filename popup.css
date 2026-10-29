@@ -1,0 +1,51 @@
+:root {
+  color-scheme: light dark;
+  --border: color-mix(in srgb, CanvasText 20%, transparent);
+  --accent: #2f6fdf;
+  --error: #c62828;
+}
+
+body {
+  width: 260px;
+  margin: 0;
+  padding: 12px;
+  font: 14px/1.4 system-ui, sans-serif;
+  background: Canvas;
+  color: CanvasText;
+}
+
+/* The deck dropdown and both buttons share one look: same size, font and border. */
+button, select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 38px;
+  margin: 0 0 8px;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--accent);
+  color: white;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.secondary { background-color: transparent; color: inherit; border-color: var(--border); }
+button:disabled { opacity: 0.5; cursor: default; }
+
+/* Native arrows differ by platform and theme, so draw one in the text colour instead. */
+select {
+  appearance: none;
+  text-align-last: center;
+  padding: 0 28px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 16px center, right 11px center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+select option { background: Canvas; color: CanvasText; }
+
+.status { min-height: 1.2em; margin: 4px 0; font-size: 13px; }
+.status.error { color: var(--error); }
