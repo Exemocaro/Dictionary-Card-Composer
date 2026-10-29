@@ -2,7 +2,7 @@ const $ = selector => document.querySelector(selector);
 
 let draft = DCC.newDraft();
 let settings = { deck: '', model: '', frontField: '', backField: '', key: '' };
-let pending = null; // { entries, block } read from the current page, not yet on the card
+let pending = null; // { blocks } read from the current page, not yet on the card
 const expanded = new Set(); // ids of blocks whose details are open
 
 // ---------- helpers ----------
@@ -86,7 +86,7 @@ function blockEditor(block, controls) {
 
 function senseChooser(block) {
   const details = el('details', 'senses');
-  details.open = !controlsFor(block) || expanded.has(block.id);
+  details.open = expanded.has(block.id);
   details.addEventListener('toggle', () => (details.open ? expanded.add(block.id) : expanded.delete(block.id)));
   const total = DCC.senseKeys(block.entry).length;
   details.append(el('summary', '', `Meanings (${block.selected.length} of ${total})`));
@@ -144,10 +144,6 @@ function imageChooser(block) {
   return list;
 }
 
-function controlsFor(block) {
-  return draft.blocks.includes(block);
-}
-
 // ---------- rendering ----------
 
 function refresh() {
@@ -157,23 +153,23 @@ function refresh() {
   saveDraft();
 }
 
+// Every entry read from the page, as Create & upload would save them; each can be left out.
 function renderPending() {
   $('#pending').hidden = !pending;
   if (!pending) return;
-  const picker = $('#entry-picker');
-  picker.hidden = pending.entries.length < 2;
-  const severalDictionaries = new Set(pending.entries.map(e => e.dictionary)).size > 1;
-  picker.replaceChildren(...pending.entries.map((entry, i) => {
-    const pos = entry.groups.map(g => g.partOfSpeech).filter(Boolean).join(', ');
-    const option = el('option', '', `${entry.headword}${entry.homograph ? ' (' + entry.homograph + ')' : ''}${pos ? ' — ' + pos : ''}` +
-      (severalDictionaries ? ` (${entry.dictionary})` : ''));
-    option.value = i;
-    return option;
+  $('#pending-editor').replaceChildren(...pending.blocks.map((block, index) => {
+    const leaveOut = el('button', 'secondary small', '✕');
+    leaveOut.title = 'Leave out';
+    leaveOut.addEventListener('click', () => {
+      pending.blocks.splice(index, 1);
+      if (!pending.blocks.length) pending = null;
+      renderPending();
+    });
+    const editor = blockEditor(block, [leaveOut]);
+    const pos = block.entry.groups.map(g => g.partOfSpeech).filter(Boolean).join(', ');
+    editor.querySelector('.grow').append(el('div', 'muted', [pos, block.entry.dictionary].filter(Boolean).join(' · ')));
+    return editor;
   }));
-  picker.value = pending.entries.indexOf(pending.block.entry);
-  $('#add-all').hidden = pending.entries.length < 2;
-  $('#add-all').textContent = `Add all ${pending.entries.length} entries`;
-  $('#pending-editor').replaceChildren(blockEditor(pending.block));
 }
 
 function renderBlocks() {
@@ -214,37 +210,25 @@ async function readPage() {
     setStatus(status, result.error + ' Your card is unchanged. You can still type into the Back.', true);
     return;
   }
-  pending = { entries: result.entries, block: DCC.newBlock(result.entries[0]) };
-  setStatus(status, result.entries.length > 1 ? `Found ${result.entries.length} entries on this page. Pick one below.` : '');
+  pending = { blocks: result.entries.map(DCC.newBlock) };
+  if (pending.blocks.length === 1) expanded.add(pending.blocks[0].id);
+  setStatus(status, pending.blocks.length > 1
+    ? `Found ${pending.blocks.length} entries on this page. Untick meanings or leave out (✕) what you don't want.`
+    : '');
   renderPending();
 }
 
 function addPending() {
   if (!pending) return;
-  const { block } = pending;
-  if (DCC.isDuplicate(draft, block.entry)) {
-    setStatus($('#read-status'), 'This entry is already on the card.', true);
-    return;
-  }
-  DCC.addBlock(draft, block);
-  if (draft.backOverride) draft.backOverride += '<hr>' + DCC.renderBlock(block, { showHeadword: true });
-  setStatus($('#read-status'), `Added "${block.entry.headword}" to the card.`);
-  pending = null;
-  refresh();
-}
-
-// Adds every entry on the page; the one on screen keeps the choices made for it.
-function addAllPending() {
-  if (!pending) return;
   let added = 0;
-  for (const entry of pending.entries) {
-    if (DCC.isDuplicate(draft, entry)) continue;
-    const block = entry === pending.block.entry ? pending.block : DCC.newBlock(entry);
+  for (const block of pending.blocks) {
+    if (DCC.isDuplicate(draft, block.entry)) continue;
     DCC.addBlock(draft, block);
     if (draft.backOverride) draft.backOverride += '<hr>' + DCC.renderBlock(block, { showHeadword: true });
     added++;
   }
-  setStatus($('#read-status'), added ? `Added ${added} entr${added > 1 ? 'ies' : 'y'} to the card.` : 'These entries are already on the card.', !added);
+  if (!added) return setStatus($('#read-status'), 'This is already on the card.', true);
+  setStatus($('#read-status'), `Added "${pending.blocks[0].entry.headword}" to the card.`);
   pending = null;
   refresh();
 }
@@ -278,8 +262,8 @@ async function copyFront() {
 
 function copyEntry() {
   if (!pending) return;
-  const single = { front: pending.block.entry.headword, blocks: [pending.block] };
-  copy($('#read-status'), DCC.renderBack(single), DCC.renderBackText(single));
+  const page = { front: pending.blocks[0].entry.headword, blocks: pending.blocks };
+  copy($('#read-status'), DCC.renderBack(page), DCC.renderBackText(page));
 }
 
 let clearArmed = false;
@@ -376,12 +360,7 @@ $('#allow-sites').addEventListener('click', async () => {
   $('#allow-sites').hidden = granted;
   setStatus($('#read-status'), granted ? 'Done. You no longer need to click the icon on each dictionary page.' : 'Access was not granted.', !granted);
 });
-$('#entry-picker').addEventListener('change', event => {
-  pending.block = DCC.newBlock(pending.entries[Number(event.target.value)]);
-  renderPending();
-});
 $('#add').addEventListener('click', addPending);
-$('#add-all').addEventListener('click', addAllPending);
 $('#copy-entry').addEventListener('click', copyEntry);
 $('#front').addEventListener('input', event => {
   draft.front = event.target.value;

@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { fakeChrome, openPage, waitFor } = require('./fake-chrome');
+const { DCC, loadFixture } = require('./helpers');
 
 const LANGUIDEZ = 'https://dicionario.priberam.org/languidez';
 const LANGOR = 'https://dicionario.priberam.org/langor';
@@ -57,15 +58,37 @@ test('unsupported pages are reported and the card is kept', async () => {
   assert.ok(panel.$('#pending').hidden);
 });
 
-test('"Add all" puts every entry on the page on the card', async () => {
+const FARE = 'https://dictionary.cambridge.org/dictionary/english/fare';
+
+test('"Read this page" shows every entry, giving the same card as Create & upload', async () => {
   const state = {};
   const panel = await openPage('sidepanel.html', fakeChrome(state), state);
-  state.tabUrl = 'https://dictionary.cambridge.org/dictionary/english/fare';
+  state.tabUrl = FARE;
   panel.$('#read').click();
   await waitFor(() => !panel.$('#pending').hidden);
-  assert.equal(panel.$('#add-all').hidden, false);
-  assert.match(panel.$('#add-all').textContent, /5/);
-  panel.$('#add-all').click();
+  assert.equal(panel.$('#pending-editor').children.length, 5, 'all five entries on the page');
+  assert.equal(panel.$('#entry-picker'), null, 'no picker showing one entry at a time');
+
+  panel.$('#add').click();
   assert.equal(panel.$('#blocks').children.length, 5);
   assert.equal(panel.$('#front').value, 'fare');
+
+  const quick = DCC.newDraft();
+  const entries = DCC.parsers.cambridge(loadFixture('cambridge-fare.html', FARE), FARE);
+  for (const entry of entries) DCC.addBlock(quick, DCC.newBlock(entry));
+  const expected = panel.window.document.createElement('div');
+  expected.innerHTML = DCC.renderBack(quick); // serialized the way the browser does (' instead of &#39;)
+  assert.equal(panel.$('#preview').innerHTML, expected.innerHTML, 'same Back as the quick button');
+});
+
+test('an entry can be left out before adding', async () => {
+  const state = {};
+  const panel = await openPage('sidepanel.html', fakeChrome(state), state);
+  state.tabUrl = FARE;
+  panel.$('#read').click();
+  await waitFor(() => !panel.$('#pending').hidden);
+  panel.$('#pending-editor').lastElementChild.querySelector('button[title="Leave out"]').click();
+  assert.equal(panel.$('#pending-editor').children.length, 4);
+  panel.$('#add').click();
+  assert.equal(panel.$('#blocks').children.length, 4);
 });
